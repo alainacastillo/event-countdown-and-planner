@@ -4,14 +4,12 @@ from typing import Dict
 
 router = APIRouter(prefix="/events", tags=["Events"])
 
-# Mock Database (Dictionary to Store Events)
 events_db: Dict[int, Dict] = {}
 event_counter = 1
 
-# Pydantic Model for Event Data
 class Event(BaseModel):
     name: str
-    date: str  # Format: YYYY-MM-DD
+    date: str  
     description: str
 
 @router.post("/")

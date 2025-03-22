@@ -1,19 +1,26 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from routers import countdown, notifications, analytics
-from routers import events
+from routers import countdown, notifications, analytics, events, auth  # Include auth.py
+import jwt
 
 app = FastAPI(title="Event Countdown and Planner API")
 
-# Mock token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def get_current_user(token: str = Depends(oauth2_scheme)):
-    if token != "valid_token":
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return {"user": payload["sub"]}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired")
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return {"user": "authenticated_user"}
 
-# Register all routers with authentication
+
+app.include_router(auth.router, prefix="/auth")
 app.include_router(countdown.router, dependencies=[Depends(get_current_user)])
 app.include_router(notifications.router, dependencies=[Depends(get_current_user)])
 app.include_router(analytics.router, dependencies=[Depends(get_current_user)])

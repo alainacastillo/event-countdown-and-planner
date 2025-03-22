@@ -3,10 +3,8 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/countdown", tags=["Countdown"])
 
-# Mock database
 events = {1: {"remaining_time": "2 days 5 hours", "status": "active"}}
 
-# Pydantic model for customization
 class CountdownSettings(BaseModel):
     theme: str
     font: str
